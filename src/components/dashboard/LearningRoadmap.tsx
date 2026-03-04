@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { mockLearningPlan } from "@/lib/mock-data";
-import { BookOpen, CheckCircle2, Calendar } from "lucide-react";
+import { useAnalysis } from "@/contexts/AnalysisContext";
+import { CheckCircle2, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-type PlanKey = keyof typeof mockLearningPlan;
-
 export function LearningRoadmap() {
-  const [plan, setPlan] = useState<PlanKey>("3 Month");
-  const plans: PlanKey[] = ["3 Month", "6 Month", "1 Year"];
+  const { analysis } = useAnalysis();
+  const learningPlan = analysis.learningPlan;
+  const plans = Object.keys(learningPlan) as string[];
+  const [plan, setPlan] = useState(plans[0] || "3 Month");
+
+  const items = learningPlan[plan] || [];
 
   return (
     <div className="space-y-6">
@@ -33,7 +35,7 @@ export function LearningRoadmap() {
       </div>
 
       <div className="space-y-3">
-        {mockLearningPlan[plan].map((item, i) => (
+        {items.map((item, i) => (
           <motion.div
             key={`${plan}-${i}`}
             initial={{ opacity: 0, x: -10 }}
@@ -45,7 +47,7 @@ export function LearningRoadmap() {
               <div className="h-10 w-10 rounded-full gradient-bg-subtle flex items-center justify-center flex-shrink-0">
                 <Calendar className="h-4 w-4 text-primary" />
               </div>
-              {i < mockLearningPlan[plan].length - 1 && (
+              {i < items.length - 1 && (
                 <div className="w-px flex-1 bg-border mt-2" />
               )}
             </div>

@@ -1,10 +1,13 @@
 import { motion } from "framer-motion";
 import { CheckCircle2, Circle, Clock } from "lucide-react";
-import { mockRoadmapStages } from "@/lib/mock-data";
+import { useAnalysis } from "@/contexts/AnalysisContext";
 import { Progress } from "@/components/ui/progress";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 export function RecommendedPath() {
+  const { analysis } = useAnalysis();
+  const stages = analysis.roadmapStages;
+
   return (
     <div className="space-y-4">
       <div className="mb-6">
@@ -12,7 +15,7 @@ export function RecommendedPath() {
         <p className="text-sm text-muted-foreground">A structured roadmap from where you are to where you want to be.</p>
       </div>
       <Accordion type="multiple" defaultValue={["1", "2"]} className="space-y-3">
-        {mockRoadmapStages.map((stage, i) => (
+        {stages.map((stage, i) => (
           <motion.div
             key={stage.id}
             initial={{ opacity: 0, x: -20 }}

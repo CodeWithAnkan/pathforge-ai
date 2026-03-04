@@ -1,10 +1,13 @@
 import { motion } from "framer-motion";
-import { mockExplanation } from "@/lib/mock-data";
+import { useAnalysis } from "@/contexts/AnalysisContext";
 import { Quote, TrendingUp, Target, Rocket } from "lucide-react";
 
 const icons = [TrendingUp, Target, Rocket];
 
 export function WhyThisPath() {
+  const { analysis } = useAnalysis();
+  const explanation = analysis.explanation;
+
   return (
     <div className="space-y-6">
       <div>
@@ -20,13 +23,13 @@ export function WhyThisPath() {
         <div className="absolute top-0 left-0 w-1 h-full gradient-bg rounded-full" />
         <Quote className="h-8 w-8 text-primary/20 mb-3" />
         <p className="text-base leading-relaxed italic text-foreground/90">
-          "{mockExplanation.quote}"
+          "{explanation.quote}"
         </p>
       </motion.div>
 
       <div className="space-y-4">
-        {mockExplanation.reasons.map((reason, i) => {
-          const Icon = icons[i];
+        {explanation.reasons.map((reason, i) => {
+          const Icon = icons[i] || TrendingUp;
           return (
             <motion.div
               key={reason.title}

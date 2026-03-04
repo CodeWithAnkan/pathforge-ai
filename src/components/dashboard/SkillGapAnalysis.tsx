@@ -1,10 +1,13 @@
 import { motion } from "framer-motion";
-import { mockSkillGap } from "@/lib/mock-data";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { useAnalysis } from "@/contexts/AnalysisContext";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { AlertTriangle, TrendingUp } from "lucide-react";
 
 export function SkillGapAnalysis() {
-  const chartData = mockSkillGap.map((s) => ({
+  const { analysis } = useAnalysis();
+  const skills = analysis.skillGap;
+
+  const chartData = skills.map((s) => ({
     name: s.skill,
     current: s.current,
     required: s.required,
@@ -39,7 +42,7 @@ export function SkillGapAnalysis() {
       </div>
 
       <div className="grid sm:grid-cols-2 gap-3">
-        {mockSkillGap.map((skill, i) => {
+        {skills.map((skill, i) => {
           const isMissing = skill.current < skill.required * 0.5;
           return (
             <motion.div
