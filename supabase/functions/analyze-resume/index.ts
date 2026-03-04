@@ -217,11 +217,19 @@ Deno.serve(async (req) => {
       throw insertError;
     }
 
-    // Update profile with extracted info
+    // Preserve user-entered full_name. Only backfill when profile name is empty.
+    const { data: existingProfile } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", userId)
+      .maybeSingle();
+
+    const resolvedName = existingProfile?.full_name || analysis.profile.name;
+
     await supabase
       .from("profiles")
       .update({
-        full_name: analysis.profile.name,
+        full_name: resolvedName,
         role: analysis.profile.role,
         education: analysis.profile.education,
       })
@@ -238,8 +246,11 @@ Deno.serve(async (req) => {
       JSON.stringify({
         success: true,
         analysis_id: analysisRow.id,
-        profile: analysis.profile,
         ...analysis,
+        profile: {
+          ...analysis.profile,
+          name: resolvedName,
+        },
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
