@@ -1,20 +1,33 @@
-import { Link, useLocation } from "react-router-dom";
-import { Moon, Sun, Sparkles, Menu, X } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Moon, Sun, Sparkles, Menu, X, LogOut } from "lucide-react";
 import { useTheme } from "@/lib/theme";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const navLinks = [
-  { label: "Home", to: "/" },
-  { label: "Dashboard", to: "/dashboard" },
-  { label: "Profile", to: "/profile" },
-];
-
 export function Navbar() {
   const { theme, toggle } = useTheme();
+  const { user, signOut } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const navLinks = user
+    ? [
+        { label: "Home", to: "/" },
+        { label: "Upload", to: "/upload" },
+        { label: "Dashboard", to: "/dashboard" },
+        { label: "Profile", to: "/profile" },
+      ]
+    : [
+        { label: "Home", to: "/" },
+      ];
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
 
   return (
     <header className="sticky top-0 z-50 glass border-b border-border/30">
@@ -49,11 +62,17 @@ export function Navbar() {
           <Button variant="ghost" size="icon" onClick={toggle} className="rounded-lg">
             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
-          <Link to="/login" className="hidden md:block">
-            <Button variant="outline" size="sm" className="rounded-lg">
-              Sign In
+          {user ? (
+            <Button variant="outline" size="sm" className="hidden md:flex rounded-lg" onClick={handleSignOut}>
+              <LogOut className="h-4 w-4 mr-2" /> Sign Out
             </Button>
-          </Link>
+          ) : (
+            <Link to="/login" className="hidden md:block">
+              <Button variant="outline" size="sm" className="rounded-lg">
+                Sign In
+              </Button>
+            </Link>
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -89,11 +108,17 @@ export function Navbar() {
                   {link.label}
                 </Link>
               ))}
-              <Link to="/login" onClick={() => setMobileOpen(false)}>
-                <Button variant="outline" size="sm" className="w-full mt-2 rounded-lg">
-                  Sign In
+              {user ? (
+                <Button variant="outline" size="sm" className="w-full mt-2 rounded-lg" onClick={() => { setMobileOpen(false); handleSignOut(); }}>
+                  <LogOut className="h-4 w-4 mr-2" /> Sign Out
                 </Button>
-              </Link>
+              ) : (
+                <Link to="/login" onClick={() => setMobileOpen(false)}>
+                  <Button variant="outline" size="sm" className="w-full mt-2 rounded-lg">
+                    Sign In
+                  </Button>
+                </Link>
+              )}
             </nav>
           </motion.div>
         )}

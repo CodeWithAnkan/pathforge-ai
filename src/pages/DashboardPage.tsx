@@ -1,8 +1,7 @@
-import { useState } from "react";
 import { motion } from "framer-motion";
 import { User, GraduationCap, Briefcase, Target, TrendingUp } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { mockProfile } from "@/lib/mock-data";
+import { useAnalysis } from "@/contexts/AnalysisContext";
 import { RecommendedPath } from "@/components/dashboard/RecommendedPath";
 import { SkillGapAnalysis } from "@/components/dashboard/SkillGapAnalysis";
 import { LearningRoadmap } from "@/components/dashboard/LearningRoadmap";
@@ -38,6 +37,9 @@ function ConfidenceCircle({ value }: { value: number }) {
 }
 
 export default function DashboardPage() {
+  const { analysis } = useAnalysis();
+  const { profile } = analysis;
+
   return (
     <div className="min-h-[80vh] py-8 px-4">
       <div className="max-w-7xl mx-auto">
@@ -48,55 +50,49 @@ export default function DashboardPage() {
             animate={{ opacity: 1, x: 0 }}
             className="space-y-4"
           >
-            {/* Profile card */}
             <div className="glass rounded-2xl p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="h-12 w-12 rounded-full gradient-bg flex items-center justify-center">
                   <User className="h-6 w-6 text-primary-foreground" />
                 </div>
                 <div>
-                  <h3 className="font-semibold">{mockProfile.name}</h3>
-                  <p className="text-sm text-muted-foreground">{mockProfile.role}</p>
+                  <h3 className="font-semibold">{profile.name}</h3>
+                  <p className="text-sm text-muted-foreground">{profile.role}</p>
                 </div>
               </div>
               <div className="space-y-3 text-sm">
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <GraduationCap className="h-4 w-4" />
-                  {mockProfile.education}
+                  {profile.education}
                 </div>
               </div>
             </div>
 
-            {/* Stats */}
             <div className="glass rounded-2xl p-6 space-y-5">
               <div>
                 <p className="text-xs text-muted-foreground mb-1">Current Level</p>
                 <span className="inline-flex px-3 py-1 rounded-full text-xs font-medium gradient-bg text-primary-foreground">
-                  {mockProfile.level}
+                  {profile.level}
                 </span>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground mb-1">Career Path</p>
                 <div className="flex items-center gap-2">
                   <Briefcase className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium">{mockProfile.careerPath}</span>
+                  <span className="text-sm font-medium">{profile.careerPath}</span>
                 </div>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground mb-2">Confidence Score</p>
                 <div className="flex justify-center">
-                  <ConfidenceCircle value={mockProfile.confidenceScore} />
+                  <ConfidenceCircle value={profile.confidenceScore} />
                 </div>
               </div>
             </div>
           </motion.aside>
 
           {/* Main content */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
             <Tabs defaultValue="path" className="w-full">
               <TabsList className="glass w-full justify-start rounded-xl h-12 p-1 mb-6">
                 <TabsTrigger value="path" className="rounded-lg data-[state=active]:gradient-bg data-[state=active]:text-primary-foreground">
