@@ -1,4 +1,13 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+declare global {
+  namespace Deno {
+    function serve(handler: (req: Request) => Response | Promise<Response>): void;
+    namespace env {
+      function get(key: string): string | undefined;
+    }
+  }
+}
+
+import { createClient } from "@supabase/supabase-js";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -6,118 +15,101 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Mock analysis data — matches the frontend data shapes exactly
-function getMockAnalysis() {
+
+// ── Transform raw Python API response → frontend data shapes ─────────────────
+function transformAnalysis(apiResponse: any) {
+
+  const bestCareer      = apiResponse.meta?.best_career_match ?? "Unknown Career";
+  const confidenceScore = apiResponse.career_recommendations?.[0]?.match_score_percent ?? 0;
+
+  // ── profile ───────────────────────────────────────────────────────────────
+  const profile = {
+    name:            "",
+    role:            "Job Seeker",
+    education:       "",
+    level:           confidenceScore >= 70 ? "Advanced" : confidenceScore >= 40 ? "Intermediate" : "Beginner",
+    careerPath:      bestCareer.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()),
+    confidenceScore: Math.round(confidenceScore),
+  };
+
+  // ── recommended_path ──────────────────────────────────────────────────────
+  const roadmapEntries  = Object.entries(apiResponse.learning_roadmap ?? {});
+  const recommended_path = roadmapEntries.map(([month, items]: [string, any], index: number) => ({
+    id:       index + 1,
+    title:    month,
+    duration: `${(items as any[]).length * 2} weeks`,
+    progress: 0,
+    tasks:    (items as any[]).map((item: any) => ({
+      label: `${item.skill.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())} — ${item.course}`,
+      done:  false,
+    })),
+  }));
+
+  // ── skill_gap ─────────────────────────────────────────────────────────────
+  const skill_gap = (apiResponse.skill_gaps ?? []).map((item: any) => {
+    const required = 85;
+    const current  = Math.round((1 - item.gap_score) * required);
+    return {
+      skill:      item.skill.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()),
+      current,
+      required,
+      importance: item.gap_score >= 0.7 ? "Critical" : item.gap_score >= 0.5 ? "High" : "Medium",
+      reason:     `Strengthen ${item.skill} to match ${profile.careerPath} requirements.`,
+    };
+  });
+
+  // ── learning_plan ─────────────────────────────────────────────────────────
+  const allSkills = (apiResponse.priority_skills ?? []) as any[];
+  const buildPlan = (skills: any[], label: string) =>
+    skills.map((item: any, i: number) => ({
+      week:      `${label} ${i + 1}`,
+      topic:     item.skill.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()),
+      milestone: `Achieve proficiency in ${item.skill}`,
+    }));
+
+  const learning_plan = {
+    "3 Month": buildPlan(allSkills.slice(0, 6),  "Week"),
+    "6 Month": buildPlan(allSkills.slice(0, 12), "Month"),
+    "1 Year":  buildPlan(allSkills,              "Quarter"),
+  };
+
+  // ── explanation — SHAP result from Python API ─────────────────────────────
+  const explanation = apiResponse.explanation ?? {
+    quote:   `You matched ${profile.careerPath} with ${Math.round(confidenceScore)}% confidence.`,
+    reasons: (apiResponse.career_recommendations ?? []).map((c: any) => ({
+      title:       c.career.replace(/_/g, " ").replace(/\b\w/g, (ch: string) => ch.toUpperCase()),
+      description: `Match score: ${c.match_score_percent}%.`,
+    })),
+  };
+
+  // ── career_insight — demand score + salary for best career ───────────────
+  const career_insight = apiResponse.career_insight ?? null;
+
+  // ── industry_insight — market-wide trends ────────────────────────────────
+  const industry_insight = apiResponse.industry_insight ?? null;
+
   return {
-    profile: {
-      name: "Alex Johnson",
-      role: "Junior Software Developer",
-      education: "B.S. Computer Science, UC Berkeley",
-      level: "Intermediate",
-      careerPath: "Full-Stack Engineer",
-      confidenceScore: 78,
-    },
-    recommended_path: [
-      {
-        id: 1,
-        title: "Foundation",
-        duration: "4 weeks",
-        progress: 100,
-        tasks: [
-          { label: "HTML & CSS Fundamentals", done: true },
-          { label: "JavaScript ES6+ Essentials", done: true },
-          { label: "Git & Version Control", done: true },
-          { label: "Command Line Basics", done: true },
-        ],
-      },
-      {
-        id: 2,
-        title: "Core Skills",
-        duration: "8 weeks",
-        progress: 60,
-        tasks: [
-          { label: "React.js & Component Architecture", done: true },
-          { label: "Node.js & Express APIs", done: true },
-          { label: "SQL & Database Design", done: false },
-          { label: "RESTful API Design Patterns", done: false },
-          { label: "TypeScript Fundamentals", done: false },
-        ],
-      },
-      {
-        id: 3,
-        title: "Advanced Skills",
-        duration: "8 weeks",
-        progress: 0,
-        tasks: [
-          { label: "System Design Basics", done: false },
-          { label: "CI/CD & DevOps Pipelines", done: false },
-          { label: "Cloud Services (AWS/GCP)", done: false },
-          { label: "Testing Strategies (Unit, Integration, E2E)", done: false },
-        ],
-      },
-      {
-        id: 4,
-        title: "Industry Readiness",
-        duration: "4 weeks",
-        progress: 0,
-        tasks: [
-          { label: "Portfolio Projects", done: false },
-          { label: "Mock Interviews & Coding Challenges", done: false },
-          { label: "Open Source Contributions", done: false },
-          { label: "Networking & Job Applications", done: false },
-        ],
-      },
-    ],
-    skill_gap: [
-      { skill: "React", current: 75, required: 90, importance: "Critical", reason: "Core framework for modern web apps" },
-      { skill: "Node.js", current: 60, required: 85, importance: "High", reason: "Server-side JS is essential for full-stack roles" },
-      { skill: "TypeScript", current: 30, required: 80, importance: "Critical", reason: "Industry standard for scalable codebases" },
-      { skill: "SQL", current: 40, required: 75, importance: "High", reason: "Database management is fundamental" },
-      { skill: "System Design", current: 15, required: 70, importance: "Medium", reason: "Required for mid-senior level interviews" },
-      { skill: "DevOps", current: 10, required: 60, importance: "Medium", reason: "CI/CD knowledge accelerates team productivity" },
-      { skill: "Testing", current: 20, required: 70, importance: "High", reason: "Quality assurance is non-negotiable in production" },
-    ],
-    learning_plan: {
-      "3 Month": [
-        { week: "Week 1–2", topic: "TypeScript Deep Dive", milestone: "Build a typed Express API" },
-        { week: "Week 3–4", topic: "Advanced React Patterns", milestone: "Refactor a project with hooks & context" },
-        { week: "Week 5–6", topic: "SQL & PostgreSQL", milestone: "Design and query a relational DB" },
-        { week: "Week 7–8", topic: "REST API Best Practices", milestone: "Build a full CRUD API" },
-        { week: "Week 9–10", topic: "Testing Fundamentals", milestone: "Add unit & integration tests" },
-        { week: "Week 11–12", topic: "Portfolio & Interview Prep", milestone: "Deploy 2 polished projects" },
-      ],
-      "6 Month": [
-        { week: "Month 1", topic: "TypeScript & Advanced JS", milestone: "Typed full-stack starter" },
-        { week: "Month 2", topic: "React Ecosystem (Router, Query, Forms)", milestone: "Complex SPA" },
-        { week: "Month 3", topic: "Backend & Databases", milestone: "REST + GraphQL APIs" },
-        { week: "Month 4", topic: "DevOps & Cloud", milestone: "Deploy to AWS with CI/CD" },
-        { week: "Month 5", topic: "System Design & Architecture", milestone: "Design doc for a scalable app" },
-        { week: "Month 6", topic: "Portfolio, OSS & Job Prep", milestone: "3 deployed projects + resume" },
-      ],
-      "1 Year": [
-        { week: "Q1", topic: "Core Fundamentals & TypeScript", milestone: "Strong foundation across stack" },
-        { week: "Q2", topic: "Full-Stack Development", milestone: "End-to-end app with auth & DB" },
-        { week: "Q3", topic: "Advanced Topics & Specialization", milestone: "Deep expertise in 1–2 areas" },
-        { week: "Q4", topic: "Industry Readiness & Career", milestone: "Job offers & open source presence" },
-      ],
-    },
-    explanation: {
-      quote: "Based on your background in Computer Science and experience with JavaScript, this Full-Stack Engineer path aligns with your existing strengths while strategically filling critical gaps in TypeScript, system design, and DevOps.",
-      reasons: [
-        { title: "Market Demand", description: "Full-stack engineers are among the most sought-after roles in tech, with a 34% increase in job postings over the past year." },
-        { title: "Skill Alignment", description: "Your existing JavaScript and React knowledge provides a strong foundation. The recommended path builds on these skills rather than starting from scratch." },
-        { title: "Growth Trajectory", description: "This path positions you for rapid career progression. Full-stack engineers typically advance to senior roles within 2-3 years." },
-      ],
-    },
+    profile,
+    recommended_path,
+    skill_gap,
+    learning_plan,
+    explanation,
+    career_insight,
+    industry_insight,
   };
 }
 
+
+// ── Edge function entry point ─────────────────────────────────────────────────
 Deno.serve(async (req) => {
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+
+    // ── Auth check ──────────────────────────────────────────────────────────
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -152,116 +144,114 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Update resume status to analyzing
+    // ── Mark resume as analyzing ────────────────────────────────────────────
     await supabase
       .from("resumes")
       .update({ status: "analyzing" })
       .eq("id", resume_id)
       .eq("user_id", userId);
 
-    // =============================================================
-    // TODO: Replace with your ML model API calls
-    // const ML_API_URL = Deno.env.get("ML_API_BASE_URL");
-    //
-    // // 1. Get resume file from storage
-    // const { data: resume } = await supabase
-    //   .from("resumes")
-    //   .select("file_path")
-    //   .eq("id", resume_id)
-    //   .single();
-    // const { data: fileData } = await supabase.storage
-    //   .from("resumes")
-    //   .download(resume.file_path);
-    //
-    // // 2. Call your 4 ML model endpoints
-    // const pathResult = await fetch(`${ML_API_URL}/recommended-path`, {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/octet-stream" },
-    //   body: fileData,
-    // }).then(r => r.json());
-    //
-    // const skillResult = await fetch(`${ML_API_URL}/skill-gap`, {
-    //   method: "POST",
-    //   body: fileData,
-    // }).then(r => r.json());
-    //
-    // const roadmapResult = await fetch(`${ML_API_URL}/learning-plan`, {
-    //   method: "POST",
-    //   body: fileData,
-    // }).then(r => r.json());
-    //
-    // const whyResult = await fetch(`${ML_API_URL}/explanation`, {
-    //   method: "POST",
-    //   body: fileData,
-    // }).then(r => r.json());
-    // =============================================================
+    // ── Fetch resume record & download file ────────────────────────────────
+    const { data: resumeRow, error: resumeError } = await supabase
+      .from("resumes")
+      .select("file_path, file_name")
+      .eq("id", resume_id)
+      .eq("user_id", userId)
+      .single();
 
-    // For now, return mock data
-    const analysis = getMockAnalysis();
+    if (resumeError || !resumeRow) throw new Error("Resume record not found.");
 
-    // Store results in DB
+    const { data: fileBlob, error: downloadError } = await supabase.storage
+      .from("resumes")
+      .download(resumeRow.file_path);
+
+    if (downloadError || !fileBlob) throw new Error("Failed to download resume from storage.");
+
+    // ── Call Python API ─────────────────────────────────────────────────────
+    const ML_API_URL = Deno.env.get("ML_API_BASE_URL");
+    if (!ML_API_URL) throw new Error("ML_API_BASE_URL secret is not set in Supabase.");
+
+    const formData = new FormData();
+    formData.append("file", new File([fileBlob], resumeRow.file_name, { type: "application/pdf" }));
+
+    const mlResponse = await fetch(`${ML_API_URL}/analyze`, {
+      method: "POST",
+      body:   formData,
+    });
+
+    if (!mlResponse.ok) {
+      const errText = await mlResponse.text();
+      throw new Error(`ML API error (${mlResponse.status}): ${errText}`);
+    }
+
+    const mlResult = await mlResponse.json();
+
+    // ── Transform ML result → frontend shapes ───────────────────────────────
+    const analysis = transformAnalysis(mlResult);
+
+    // ── Save analysis to DB ─────────────────────────────────────────────────
     const { data: analysisRow, error: insertError } = await supabase
       .from("analyses")
       .insert({
-        user_id: userId,
+        user_id:          userId,
         resume_id,
         recommended_path: analysis.recommended_path,
-        skill_gap: analysis.skill_gap,
-        learning_plan: analysis.learning_plan,
-        explanation: analysis.explanation,
+        skill_gap:        analysis.skill_gap,
+        learning_plan:    analysis.learning_plan,
+        explanation:      analysis.explanation,
+        career_insight:   analysis.career_insight,
+        industry_insight: analysis.industry_insight,
       })
       .select()
       .single();
 
-    if (insertError) {
-      throw insertError;
-    }
+    if (insertError) throw insertError;
 
-    // Preserve user-entered full_name. Only backfill when profile name is empty.
+    // ── Update profile ──────────────────────────────────────────────────────
     const { data: existingProfile } = await supabase
       .from("profiles")
-      .select("full_name")
+      .select("full_name, education")
       .eq("id", userId)
       .maybeSingle();
-
-    const resolvedName = existingProfile?.full_name || analysis.profile.name;
 
     await supabase
       .from("profiles")
       .update({
-        full_name: resolvedName,
         role: analysis.profile.role,
-        education: analysis.profile.education,
+        ...(existingProfile?.full_name ? {} : { full_name: analysis.profile.name }),
+        ...(existingProfile?.education ? {} : { education: analysis.profile.education }),
       })
       .eq("id", userId);
 
-    // Update resume status
+    // ── Mark resume as analyzed ─────────────────────────────────────────────
     await supabase
       .from("resumes")
       .update({ status: "analyzed" })
       .eq("id", resume_id)
       .eq("user_id", userId);
 
+    // ── Return to frontend ──────────────────────────────────────────────────
+    const resolvedName = existingProfile?.full_name || analysis.profile.name;
+
     return new Response(
       JSON.stringify({
-        success: true,
+        success:     true,
         analysis_id: analysisRow.id,
         ...analysis,
         profile: {
           ...analysis.profile,
-          name: resolvedName,
+          name:      resolvedName,
+          education: existingProfile?.education || analysis.profile.education,
         },
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-  } catch (error) {
-    console.error("Error analyzing resume:", error);
+
+  } catch (error: any) {
+    console.error("Edge function error:", error);
     return new Response(
       JSON.stringify({ error: error.message || "Internal server error" }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });

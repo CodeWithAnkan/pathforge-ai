@@ -1,81 +1,93 @@
+"""
+industry_analyzer.py — Callable industry insights module.
+
+Exposes one public function:
+    get_industry_insights() -> dict
+
+Returns structured market data with no plots or prints,
+suitable for inclusion in the API response.
+"""
+
+import os
 import pandas as pd
-import matplotlib.pyplot as plt
 from collections import Counter
 
-# GLOBAL GRAPH SETTINGS (Fix size issues)
-plt.rcParams["figure.figsize"] = (8, 4)
-plt.rcParams["axes.titlesize"] = 12
-plt.rcParams["axes.labelsize"] = 10
-plt.rcParams["xtick.labelsize"] = 9
-plt.rcParams["ytick.labelsize"] = 9
+# ── Path ──────────────────────────────────────────────────────────────────────
+BASE_DIR  = os.path.dirname(os.path.abspath(__file__))
+DATA_PATH = os.path.join(BASE_DIR, "data", "jobs_dataset.csv")
 
-# LOAD DATASET
-data = pd.read_csv("jobs_dataset.csv")
+# ── Cache — load once at import time ─────────────────────────────────────────
+_data = None
 
-print("\nDataset Loaded Successfully!\n")
+def _load_data() -> pd.DataFrame:
+    global _data
+    if _data is None:
+        _data = pd.read_csv(DATA_PATH)
+    return _data
 
-# SKILL POPULARITY ANALYSIS
-all_skills = []
 
-for skills in data["Skills"]:
-    skill_list = skills.split(";")
-    all_skills.extend(skill_list)
+def get_industry_insights() -> dict:
+    """
+    Returns market-wide industry insights derived from jobs_dataset.csv.
 
-skill_count = Counter(all_skills)
+    Response shape:
+    {
+        "top_skills": [
+            { "skill": "Python", "frequency": 6 }, ...
+        ],
+        "career_demand_ranking": [
+            { "career": "AI Engineer", "demand_score": 90.0 }, ...
+        ],
+        "salary_trends": [
+            { "career": "AI Engineer", "average_salary_inr": 1500000.0 }, ...
+        ]
+    }
+    """
+    data = _load_data()
 
-skill_df = pd.DataFrame(skill_count.items(), columns=["Skill", "Frequency"])
-skill_df = skill_df.sort_values(by="Frequency", ascending=False)
+    # ── Top skills by frequency across all job roles ──────────────────────────
+    all_skills = []
+    for skills in data["Skills"]:
+        all_skills.extend(skills.split(";"))
 
-print("Top In-Demand Skills:\n")
-print(skill_df.head(10))
+    skill_count = Counter(all_skills)
+    top_skills = [
+        {"skill": skill, "frequency": count}
+        for skill, count in skill_count.most_common(10)
+    ]
 
-# Plot Top Skills
-plt.figure()
-plt.bar(skill_df["Skill"][:10], skill_df["Frequency"][:10])
-plt.title("Top 10 Most Demanded Skills")
-plt.xlabel("Skills")
-plt.ylabel("Frequency")
-plt.xticks(rotation=30)
-plt.tight_layout()
-plt.show()
+    # ── Career demand ranking ─────────────────────────────────────────────────
+    career_demand = (
+        data.groupby("Job_Role")["Demand_Score"]
+        .mean()
+        .sort_values(ascending=False)
+        .reset_index()
+    )
+    career_demand_ranking = [
+        {
+            "career": row["Job_Role"],
+            "demand_score": round(float(row["Demand_Score"]), 1)
+        }
+        for _, row in career_demand.iterrows()
+    ]
 
-# CAREER DEMAND INDEX
-career_demand = data.groupby("Job_Role")["Demand_Score"].mean().sort_values(ascending=False)
+    # ── Salary trends ─────────────────────────────────────────────────────────
+    salary_trend = (
+        data.groupby("Job_Role")["Average_Salary_INR"]
+        .mean()
+        .sort_values(ascending=False)
+        .reset_index()
+    )
+    salary_trends = [
+        {
+            "career": row["Job_Role"],
+            "average_salary_inr": round(float(row["Average_Salary_INR"]), 0)
+        }
+        for _, row in salary_trend.iterrows()
+    ]
 
-print("\nCareer Demand Ranking:\n")
-print(career_demand)
-
-plt.figure()
-career_demand.plot(kind="bar")
-plt.title("Career Demand Index")
-plt.xlabel("Career")
-plt.ylabel("Demand Score")
-plt.xticks(rotation=30)
-plt.tight_layout()
-plt.show()
-
-#SALARY TREND ANALYSIS
-salary_trend = data.groupby("Job_Role")["Average_Salary_INR"].mean().sort_values(ascending=False)
-
-print("\nSalary Comparison:\n")
-print(salary_trend)
-
-plt.figure()
-salary_trend.plot(kind="bar")
-plt.title("Average Salary by Career")
-plt.xlabel("Career")
-plt.ylabel("Salary (INR)")
-plt.xticks(rotation=30)
-plt.tight_layout()
-plt.show()
-
-# DEMAND vs SALARY RELATIONSHIP
-plt.figure()
-plt.scatter(data["Demand_Score"], data["Average_Salary_INR"])
-plt.title("Demand vs Salary Relationship")
-plt.xlabel("Demand Score")
-plt.ylabel("Salary (INR)")
-plt.tight_layout()
-plt.show()
-
-print("\nIndustry Analysis Completed Successfully!")
+    return {
+        "top_skills":             top_skills,
+        "career_demand_ranking":  career_demand_ranking,
+        "salary_trends":          salary_trends,
+    }
