@@ -35,10 +35,6 @@ export function Footer() {
         </div>
         <div className="border-t border-border/30 mt-8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="text-xs text-muted-foreground">© 2024 PathForge AI. All rights reserved.</p>
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Sparkles className="h-3 w-3 text-accent" />
-            Built with AI
-          </div>
         </div>
       </div>
     </footer>
