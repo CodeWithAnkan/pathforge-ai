@@ -33,7 +33,7 @@ function transformAnalysis(apiResponse: any) {
   };
 
   // ── recommended_path ──────────────────────────────────────────────────────
-  const roadmapEntries  = Object.entries(apiResponse.learning_roadmap ?? {});
+  const roadmapEntries   = Object.entries(apiResponse.learning_roadmap ?? {});
   const recommended_path = roadmapEntries.map(([month, items]: [string, any], index: number) => ({
     id:       index + 1,
     title:    month,
@@ -82,10 +82,10 @@ function transformAnalysis(apiResponse: any) {
     })),
   };
 
-  // ── career_insight — demand score + salary for best career ───────────────
-  const career_insight = apiResponse.career_insight ?? null;
+  // ── career_insight — demand score + salary for best career ────────────────
+  const career_insight   = apiResponse.career_insight   ?? null;
 
-  // ── industry_insight — market-wide trends ────────────────────────────────
+  // ── industry_insight — market-wide trends ─────────────────────────────────
   const industry_insight = apiResponse.industry_insight ?? null;
 
   return {
@@ -124,17 +124,18 @@ Deno.serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(
+    // ── getUser replaces getClaims (which doesn't exist in supabase-js v2) ──
+    const { data: { user }, error: userError } = await supabase.auth.getUser(
       authHeader.replace("Bearer ", "")
     );
-    if (claimsError || !claimsData?.claims) {
+    if (userError || !user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const userId = claimsData.claims.sub as string;
+    const userId = user.id;
     const { resume_id } = await req.json();
 
     if (!resume_id) {

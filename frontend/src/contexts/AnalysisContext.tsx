@@ -1,13 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./AuthContext";
-import {
-  mockProfile,
-  mockRoadmapStages,
-  mockSkillGap,
-  mockLearningPlan,
-  mockExplanation,
-} from "@/lib/mock-data";
 
 interface Profile {
   name: string;
@@ -51,6 +44,8 @@ interface AnalysisData {
   skillGap: SkillGapItem[];
   learningPlan: Record<string, LearningPlanItem[]>;
   explanation: Explanation;
+  careerInsight?: any;
+  industryInsight?: any;
 }
 
 interface AnalysisContextType {
@@ -61,11 +56,20 @@ interface AnalysisContextType {
 }
 
 const defaultAnalysis: AnalysisData = {
-  profile: mockProfile,
-  roadmapStages: mockRoadmapStages,
-  skillGap: mockSkillGap,
-  learningPlan: mockLearningPlan,
-  explanation: mockExplanation,
+  profile: {
+    name: "",
+    role: "",
+    education: "",
+    level: "",
+    careerPath: "",
+    confidenceScore: 0,
+  },
+  roadmapStages: [],
+  skillGap: [],
+  learningPlan: {},
+  explanation: { quote: "", reasons: [] },
+  careerInsight: null,
+  industryInsight: null,
 };
 
 const AnalysisContext = createContext<AnalysisContextType | undefined>(undefined);
@@ -86,6 +90,7 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
 
     const fetchLatest = async () => {
       setLoading(true);
+
       const { data, error } = await supabase
         .from("analyses")
         .select("*")
@@ -99,6 +104,8 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
         const sg = data.skill_gap as any;
         const lp = data.learning_plan as any;
         const ex = data.explanation as any;
+        const ci = (data as any).career_insight ?? null;
+        const ii = (data as any).industry_insight ?? null;
 
         // Also fetch profile
         const { data: profile } = await supabase
@@ -109,20 +116,26 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
 
         setAnalysis({
           profile: {
-            name: profile?.full_name || mockProfile.name,
-            role: profile?.role || mockProfile.role,
-            education: profile?.education || mockProfile.education,
-            level: mockProfile.level,
-            careerPath: mockProfile.careerPath,
-            confidenceScore: mockProfile.confidenceScore,
+            name:            profile?.full_name || "",
+            role:            profile?.role      || "",
+            education:       profile?.education || "",
+            level:           rp?.[0] ? (
+              ex?.quote?.includes("Advanced") ? "Advanced" :
+              ex?.quote?.includes("Beginner") ? "Beginner" : "Intermediate"
+            ) : "",
+            careerPath:      profile?.role || "",
+            confidenceScore: rp?.[0]?.confidenceScore ?? 0,
           },
-          roadmapStages: rp || mockRoadmapStages,
-          skillGap: sg || mockSkillGap,
-          learningPlan: lp || mockLearningPlan,
-          explanation: ex || mockExplanation,
+          roadmapStages: rp  || [],
+          skillGap:      sg  || [],
+          learningPlan:  lp  || {},
+          explanation:   ex  || { quote: "", reasons: [] },
+          careerInsight: ci,
+          industryInsight: ii,
         });
         setHasRealData(true);
       }
+
       setLoading(false);
     };
 
@@ -131,11 +144,13 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
 
   const setAnalysisFromResponse = (data: any) => {
     setAnalysis({
-      profile: data.profile || defaultAnalysis.profile,
-      roadmapStages: data.recommended_path || defaultAnalysis.roadmapStages,
-      skillGap: data.skill_gap || defaultAnalysis.skillGap,
-      learningPlan: data.learning_plan || defaultAnalysis.learningPlan,
-      explanation: data.explanation || defaultAnalysis.explanation,
+      profile:        data.profile        || defaultAnalysis.profile,
+      roadmapStages:  data.recommended_path || [],
+      skillGap:       data.skill_gap      || [],
+      learningPlan:   data.learning_plan  || {},
+      explanation:    data.explanation    || { quote: "", reasons: [] },
+      careerInsight:  data.career_insight  ?? null,
+      industryInsight: data.industry_insight ?? null,
     });
     setHasRealData(true);
   };
