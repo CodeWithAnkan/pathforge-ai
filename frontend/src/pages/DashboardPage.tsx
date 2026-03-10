@@ -44,8 +44,9 @@ function formatSalary(amount: number | null): string {
 
 export default function DashboardPage() {
   const { analysis } = useAnalysis();
-  const { profile } = analysis;
-  const careerInsight = (analysis as any).careerInsight ?? null;
+  const { profile }  = analysis;
+  const topMatch     = analysis.careerRecommendations?.[0] ?? null;
+  const careerInsight = analysis.careerInsight ?? null;
 
   return (
     <div className="min-h-[80vh] py-8 px-4">
@@ -69,12 +70,41 @@ export default function DashboardPage() {
                   <p className="text-sm text-muted-foreground">{profile.role}</p>
                 </div>
               </div>
-              <div className="space-y-3 text-sm">
-                <div className="flex items-center gap-2 text-muted-foreground">
+
+              {/* Education */}
+              {profile.education && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
                   <GraduationCap className="h-4 w-4" />
                   {profile.education}
                 </div>
-              </div>
+              )}
+
+              {/* Top match score below name */}
+              {topMatch && (
+                <div className="mt-3 pt-3 border-t border-border/40">
+                  <p className="text-xs text-muted-foreground mb-2">Top Career Match</p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Target className="h-4 w-4 text-primary" />
+                      <span className="text-sm font-medium">
+                        {topMatch.career.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                      </span>
+                    </div>
+                    <span className="text-sm font-bold text-primary">
+                      {topMatch.match_score_percent.toFixed(1)}%
+                    </span>
+                  </div>
+                  {/* Mini progress bar */}
+                  <div className="h-1.5 rounded-full bg-muted mt-2 overflow-hidden">
+                    <motion.div
+                      className="h-full gradient-bg rounded-full"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${topMatch.match_score_percent}%` }}
+                      transition={{ duration: 1, ease: "easeOut" }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Career stats card */}
@@ -82,7 +112,7 @@ export default function DashboardPage() {
               <div>
                 <p className="text-xs text-muted-foreground mb-1">Current Level</p>
                 <span className="inline-flex px-3 py-1 rounded-full text-xs font-medium gradient-bg text-primary-foreground">
-                  {profile.level}
+                  {profile.level || "—"}
                 </span>
               </div>
 
@@ -90,7 +120,7 @@ export default function DashboardPage() {
                 <p className="text-xs text-muted-foreground mb-1">Career Path</p>
                 <div className="flex items-center gap-2">
                   <Briefcase className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium">{profile.careerPath}</span>
+                  <span className="text-sm font-medium">{profile.careerPath || "—"}</span>
                 </div>
               </div>
 
@@ -101,68 +131,61 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* ── Career insight: demand + salary ──────────────────────── */}
-              {careerInsight && (
-                <>
-                  <div className="border-t border-border/40 pt-4 space-y-3">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                      Market Insight
-                    </p>
+              {/* Market insight */}
+              {careerInsight?.demand_score != null && (
+                <div className="border-t border-border/40 pt-4 space-y-3">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    Market Insight
+                  </p>
 
-                    {/* Demand score */}
-                    {careerInsight.demand_score != null && (
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <BarChart2 className="h-4 w-4 text-primary" />
-                          <span>Industry Demand</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <div className="h-1.5 w-16 rounded-full bg-muted overflow-hidden">
-                            <motion.div
-                              className="h-full gradient-bg rounded-full"
-                              initial={{ width: 0 }}
-                              animate={{ width: `${careerInsight.demand_score}%` }}
-                              transition={{ duration: 1, ease: "easeOut" }}
-                            />
-                          </div>
-                          <span className="text-xs font-semibold text-primary">
-                            {careerInsight.demand_score}/100
-                          </span>
-                        </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <BarChart2 className="h-4 w-4 text-primary" />
+                      <span>Industry Demand</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-1.5 w-16 rounded-full bg-muted overflow-hidden">
+                        <motion.div
+                          className="h-full gradient-bg rounded-full"
+                          initial={{ width: 0 }}
+                          animate={{ width: `${careerInsight.demand_score}%` }}
+                          transition={{ duration: 1, ease: "easeOut" }}
+                        />
                       </div>
-                    )}
-
-                    {/* Average salary */}
-                    {careerInsight.average_salary_inr != null && (
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <DollarSign className="h-4 w-4 text-accent" />
-                          <span>Avg. Salary</span>
-                        </div>
-                        <span className="text-sm font-semibold text-accent">
-                          {formatSalary(careerInsight.average_salary_inr)}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Key skills from dataset */}
-                    {careerInsight.key_skills && (
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1.5">Key Skills Needed</p>
-                        <div className="flex flex-wrap gap-1">
-                          {careerInsight.key_skills.split(";").map((skill: string) => (
-                            <span
-                              key={skill}
-                              className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium"
-                            >
-                              {skill.trim()}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                      <span className="text-xs font-semibold text-primary">
+                        {careerInsight.demand_score}/100
+                      </span>
+                    </div>
                   </div>
-                </>
+
+                  {careerInsight.average_salary_inr != null && (
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <DollarSign className="h-4 w-4 text-accent" />
+                        <span>Avg. Salary</span>
+                      </div>
+                      <span className="text-sm font-semibold text-accent">
+                        {formatSalary(careerInsight.average_salary_inr)}
+                      </span>
+                    </div>
+                  )}
+
+                  {careerInsight.key_skills && (
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1.5">Key Skills Needed</p>
+                      <div className="flex flex-wrap gap-1">
+                        {careerInsight.key_skills.split(";").map((skill: string) => (
+                          <span
+                            key={skill}
+                            className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium"
+                          >
+                            {skill.trim()}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           </motion.aside>

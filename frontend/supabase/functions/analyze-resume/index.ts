@@ -32,6 +32,9 @@ function transformAnalysis(apiResponse: any) {
     confidenceScore: Math.round(confidenceScore),
   };
 
+  // ── career_recommendations — pass through directly ────────────────────────
+  const career_recommendations = apiResponse.career_recommendations ?? [];
+
   // ── recommended_path ──────────────────────────────────────────────────────
   const roadmapEntries   = Object.entries(apiResponse.learning_roadmap ?? {});
   const recommended_path = roadmapEntries.map(([month, items]: [string, any], index: number) => ({
@@ -73,23 +76,21 @@ function transformAnalysis(apiResponse: any) {
     "1 Year":  buildPlan(allSkills,              "Quarter"),
   };
 
-  // ── explanation — SHAP result from Python API ─────────────────────────────
+  // ── explanation ───────────────────────────────────────────────────────────
   const explanation = apiResponse.explanation ?? {
     quote:   `You matched ${profile.careerPath} with ${Math.round(confidenceScore)}% confidence.`,
-    reasons: (apiResponse.career_recommendations ?? []).map((c: any) => ({
+    reasons: career_recommendations.map((c: any) => ({
       title:       c.career.replace(/_/g, " ").replace(/\b\w/g, (ch: string) => ch.toUpperCase()),
       description: `Match score: ${c.match_score_percent}%.`,
     })),
   };
 
-  // ── career_insight — demand score + salary for best career ────────────────
   const career_insight   = apiResponse.career_insight   ?? null;
-
-  // ── industry_insight — market-wide trends ─────────────────────────────────
   const industry_insight = apiResponse.industry_insight ?? null;
 
   return {
     profile,
+    career_recommendations,
     recommended_path,
     skill_gap,
     learning_plan,
@@ -109,7 +110,6 @@ Deno.serve(async (req) => {
 
   try {
 
-    // ── Auth check ──────────────────────────────────────────────────────────
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -124,7 +124,6 @@ Deno.serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    // ── getUser replaces getClaims (which doesn't exist in supabase-js v2) ──
     const { data: { user }, error: userError } = await supabase.auth.getUser(
       authHeader.replace("Bearer ", "")
     );
@@ -145,14 +144,12 @@ Deno.serve(async (req) => {
       });
     }
 
-    // ── Mark resume as analyzing ────────────────────────────────────────────
     await supabase
       .from("resumes")
       .update({ status: "analyzing" })
       .eq("id", resume_id)
       .eq("user_id", userId);
 
-    // ── Fetch resume record & download file ────────────────────────────────
     const { data: resumeRow, error: resumeError } = await supabase
       .from("resumes")
       .select("file_path, file_name")
@@ -168,7 +165,6 @@ Deno.serve(async (req) => {
 
     if (downloadError || !fileBlob) throw new Error("Failed to download resume from storage.");
 
-    // ── Call Python API ─────────────────────────────────────────────────────
     const ML_API_URL = Deno.env.get("ML_API_BASE_URL");
     if (!ML_API_URL) throw new Error("ML_API_BASE_URL secret is not set in Supabase.");
 
@@ -186,29 +182,26 @@ Deno.serve(async (req) => {
     }
 
     const mlResult = await mlResponse.json();
-
-    // ── Transform ML result → frontend shapes ───────────────────────────────
     const analysis = transformAnalysis(mlResult);
 
-    // ── Save analysis to DB ─────────────────────────────────────────────────
     const { data: analysisRow, error: insertError } = await supabase
       .from("analyses")
       .insert({
-        user_id:          userId,
+        user_id:                userId,
         resume_id,
-        recommended_path: analysis.recommended_path,
-        skill_gap:        analysis.skill_gap,
-        learning_plan:    analysis.learning_plan,
-        explanation:      analysis.explanation,
-        career_insight:   analysis.career_insight,
-        industry_insight: analysis.industry_insight,
+        recommended_path:       analysis.recommended_path,
+        skill_gap:              analysis.skill_gap,
+        learning_plan:          analysis.learning_plan,
+        explanation:            analysis.explanation,
+        career_recommendations: analysis.career_recommendations,
+        career_insight:         analysis.career_insight,
+        industry_insight:       analysis.industry_insight,
       })
       .select()
       .single();
 
     if (insertError) throw insertError;
 
-    // ── Update profile ──────────────────────────────────────────────────────
     const { data: existingProfile } = await supabase
       .from("profiles")
       .select("full_name, education")
@@ -224,14 +217,12 @@ Deno.serve(async (req) => {
       })
       .eq("id", userId);
 
-    // ── Mark resume as analyzed ─────────────────────────────────────────────
     await supabase
       .from("resumes")
       .update({ status: "analyzed" })
       .eq("id", resume_id)
       .eq("user_id", userId);
 
-    // ── Return to frontend ──────────────────────────────────────────────────
     const resolvedName = existingProfile?.full_name || analysis.profile.name;
 
     return new Response(
