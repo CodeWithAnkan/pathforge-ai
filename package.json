@@ -3,11 +3,15 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "workspaces": ["frontend"],
   "scripts": {
-    "dev": "cd frontend && npx vite --host 0.0.0.0",
-    "build": "cd frontend && npx vite build",
-    "preview": "cd frontend && npx vite preview",
-    "test": "cd frontend && npx vitest run"
+    "dev": "cd frontend && bun run dev",
+    "build": "cd frontend && bun run build",
+    "preview": "cd frontend && bun run preview",
+    "test": "cd frontend && bun run test"
+  },
+  "devDependencies": {
+    "vite": "^7.3.1",
+    "@vitejs/plugin-react-swc": "^3.11.0",
+    "lovable-tagger": "^1.1.13"
   }
 }
