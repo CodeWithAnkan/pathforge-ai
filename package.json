@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "workspaces": ["frontend"],
   "scripts": {
     "dev": "cd frontend && npx vite --host 0.0.0.0",
     "build": "cd frontend && npx vite build",
