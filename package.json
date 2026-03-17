@@ -4,14 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "cd frontend && bun run dev",
-    "build": "cd frontend && bun run build",
-    "preview": "cd frontend && bun run preview",
-    "test": "cd frontend && bun run test"
+    "dev": "npx --prefix frontend vite --host 0.0.0.0",
+    "build": "npx --prefix frontend vite build",
+    "preview": "npx --prefix frontend vite preview",
+    "test": "npx --prefix frontend vitest run"
   },
-  "devDependencies": {
-    "vite": "^7.3.1",
-    "@vitejs/plugin-react-swc": "^3.11.0",
-    "lovable-tagger": "^1.1.13"
-  }
+  "dependencies": {},
+  "devDependencies": {}
 }
