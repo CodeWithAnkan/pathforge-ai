@@ -6,27 +6,15 @@ import { Button } from "@/components/ui/button";
 function HeroBackground() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {/* Gradient orbs */}
-      <div className="absolute top-1/4 -left-32 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse-glow" />
-      <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-pulse-glow" style={{ animationDelay: "1s" }} />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl" />
+      {/* Subtle radial gradient */}
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-primary/8 rounded-full blur-[120px]" />
+      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-primary/5 rounded-full blur-[100px]" />
 
       {/* Grid pattern */}
-      <div className="absolute inset-0 opacity-[0.03]" style={{
+      <div className="absolute inset-0 opacity-[0.02]" style={{
         backgroundImage: "linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)",
-        backgroundSize: "60px 60px",
+        backgroundSize: "64px 64px",
       }} />
-
-      {/* Floating dots */}
-      {[...Array(6)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute w-2 h-2 rounded-full bg-primary/30"
-          style={{ left: `${15 + i * 15}%`, top: `${20 + (i % 3) * 25}%` }}
-          animate={{ y: [-10, 10, -10], opacity: [0.3, 0.7, 0.3] }}
-          transition={{ duration: 3 + i, repeat: Infinity, ease: "easeInOut" }}
-        />
-      ))}
     </div>
   );
 }
@@ -51,7 +39,7 @@ export default function LandingPage() {
             transition={{ duration: 0.6 }}
           >
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass text-xs font-medium text-muted-foreground mb-8">
-              <Sparkles className="h-3.5 w-3.5 text-accent" />
+              <Sparkles className="h-3.5 w-3.5 text-primary" />
               AI-Powered Career Intelligence
             </div>
 
@@ -66,13 +54,13 @@ export default function LandingPage() {
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link to="/upload">
-                <Button size="lg" className="gradient-bg text-primary-foreground rounded-xl px-8 h-12 text-base font-semibold shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all hover:scale-[1.02]">
+                <Button size="lg" className="gradient-bg text-primary-foreground rounded-xl px-8 h-12 text-base font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all duration-200 hover:scale-[1.02]">
                   <Upload className="mr-2 h-5 w-5" />
                   Upload Resume
                 </Button>
               </Link>
               <Link to="/dashboard">
-                <Button variant="outline" size="lg" className="rounded-xl px-8 h-12 text-base font-semibold hover:scale-[1.02] transition-all">
+                <Button variant="outline" size="lg" className="rounded-xl px-8 h-12 text-base font-semibold hover:scale-[1.02] transition-all duration-200 hover:bg-secondary">
                   <Play className="mr-2 h-4 w-4" />
                   See Demo
                 </Button>
@@ -97,7 +85,7 @@ export default function LandingPage() {
             </p>
           </motion.div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {features.map((f, i) => (
               <motion.div
                 key={f.title}
@@ -105,13 +93,13 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="glass rounded-2xl p-6 hover:shadow-xl transition-all hover:-translate-y-1 group"
+                className="glass rounded-2xl p-6 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-1 group"
               >
-                <div className="h-10 w-10 rounded-xl gradient-bg-subtle flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <div className="h-10 w-10 rounded-xl gradient-bg-subtle flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-200">
                   <f.icon className="h-5 w-5 text-primary" />
                 </div>
                 <h3 className="font-semibold mb-2">{f.title}</h3>
-                <p className="text-sm text-muted-foreground">{f.desc}</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -126,14 +114,14 @@ export default function LandingPage() {
           viewport={{ once: true }}
           className="max-w-3xl mx-auto text-center glass rounded-3xl p-12 relative overflow-hidden"
         >
-          <div className="absolute inset-0 gradient-bg opacity-5" />
+          <div className="absolute inset-0 bg-primary/3" />
           <div className="relative z-10">
             <h2 className="text-3xl font-bold mb-4">Ready to forge your path?</h2>
             <p className="text-muted-foreground mb-8 max-w-md mx-auto">
               Join thousands of professionals who've accelerated their careers with AI-powered guidance.
             </p>
             <Link to="/upload">
-              <Button size="lg" className="gradient-bg text-primary-foreground rounded-xl px-8 h-12 font-semibold shadow-lg shadow-primary/25">
+              <Button size="lg" className="gradient-bg text-primary-foreground rounded-xl px-8 h-12 font-semibold shadow-lg shadow-primary/20 transition-all duration-200 hover:scale-[1.02]">
                 Get Started Free
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
