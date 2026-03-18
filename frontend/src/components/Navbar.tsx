@@ -38,7 +38,7 @@ export function Navbar() {
             alt="PathForge AI"
             className="h-8 w-8 object-contain"
           />
-          <span className="text-[15px] font-semibold tracking-tight text-[#e5e7eb43]">
+          <span className="text-[15px] font-semibold tracking-tight text-foreground">
             Path<span className="text-[#3B82F6]">Forge</span> AI
           </span>
         </Link>
