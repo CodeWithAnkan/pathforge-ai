@@ -36,7 +36,7 @@ export function Navbar() {
           <img
             src="/logo.png"
             alt="PathForge AI"
-            className="h-8 w-8 object-contain rounded-lg"
+            className="h-8 w-8 object-contain"
           />
           <span className="text-[15px] font-semibold tracking-tight text-[#E5E7EB]">
             Path<span className="text-[#3B82F6]">Forge</span> AI
