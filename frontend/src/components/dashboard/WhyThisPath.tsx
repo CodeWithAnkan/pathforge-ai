@@ -20,14 +20,14 @@ export function WhyThisPath() {
         animate={{ opacity: 1, y: 0 }}
         className="glass rounded-2xl p-6 relative overflow-hidden"
       >
-        <div className="absolute top-0 left-0 w-1 h-full gradient-bg rounded-full" />
+        <div className="absolute top-0 left-0 w-0.5 h-full bg-primary rounded-full" />
         <Quote className="h-8 w-8 text-primary/20 mb-3" />
         <p className="text-base leading-relaxed italic text-foreground/90">
           "{explanation.quote}"
         </p>
       </motion.div>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         {explanation.reasons.map((reason, i) => {
           const Icon = icons[i] || TrendingUp;
           return (
@@ -36,7 +36,7 @@ export function WhyThisPath() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 + i * 0.1 }}
-              className="glass rounded-xl p-5"
+              className="glass rounded-xl p-5 hover:shadow-lg hover:shadow-primary/5 transition-all duration-200"
             >
               <div className="flex items-center gap-3 mb-2">
                 <div className="h-8 w-8 rounded-lg gradient-bg-subtle flex items-center justify-center">
