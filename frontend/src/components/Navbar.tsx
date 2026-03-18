@@ -15,14 +15,14 @@ export function Navbar() {
 
   const navLinks = user
     ? [
-        { label: "Home", to: "/" },
-        { label: "Upload", to: "/upload" },
-        { label: "Dashboard", to: "/dashboard" },
-        { label: "Profile", to: "/profile" },
-      ]
+      { label: "Home", to: "/" },
+      { label: "Upload", to: "/upload" },
+      { label: "Dashboard", to: "/dashboard" },
+      { label: "Profile", to: "/profile" },
+    ]
     : [
-        { label: "Home", to: "/" },
-      ];
+      { label: "Home", to: "/" },
+    ];
 
   const handleSignOut = async () => {
     await signOut();
@@ -33,11 +33,13 @@ export function Navbar() {
     <header className="sticky top-0 z-50 glass border-b border-border/30">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link to="/" className="flex items-center gap-2 group">
-          <div className="h-8 w-8 rounded-lg gradient-bg flex items-center justify-center">
-            <Sparkles className="h-4 w-4 text-primary-foreground" />
-          </div>
-          <span className="text-lg font-bold tracking-tight">
-            Path<span className="gradient-text">Forge</span> AI
+          <img
+            src="/logo.png"
+            alt="PathForge AI"
+            className="h-8 w-8 object-contain rounded-lg"
+          />
+          <span className="text-[15px] font-semibold tracking-tight text-[#E5E7EB]">
+            Path<span className="text-[#3B82F6]">Forge</span> AI
           </span>
         </Link>
 
@@ -47,11 +49,10 @@ export function Navbar() {
             <Link
               key={link.to}
               to={link.to}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                location.pathname === link.to
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              }`}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${location.pathname === link.to
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                }`}
             >
               {link.label}
             </Link>
@@ -99,11 +100,10 @@ export function Navbar() {
                   key={link.to}
                   to={link.to}
                   onClick={() => setMobileOpen(false)}
-                  className={`px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                    location.pathname === link.to
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  }`}
+                  className={`px-4 py-3 rounded-lg text-sm font-medium transition-colors ${location.pathname === link.to
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    }`}
                 >
                   {link.label}
                 </Link>
