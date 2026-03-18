@@ -54,7 +54,7 @@ function CareerMatchCards() {
                   isTop
                     ? "bg-white/20 text-white"
                     : i === 1
-                    ? "bg-accent/10 text-accent"
+                    ? "bg-primary/10 text-primary"
                     : "bg-muted text-muted-foreground"
                 }`}>
                   <Icon className="h-3 w-3" />
