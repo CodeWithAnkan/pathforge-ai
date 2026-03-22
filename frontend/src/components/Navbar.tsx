@@ -40,7 +40,7 @@ export function Navbar() {
             className="h-8 w-8 object-contain dark:invert-0 invert"
           />
           <span
-            className="text-sm font-bold text-foreground tracking-wide -ml-1"
+            className="text-sm font-bold text-foreground tracking-wide"
             style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500 }}
           >
             athForge<span className="text-[#3B82F6]">-AI</span>
