@@ -313,16 +313,6 @@ export default function ProfilePage() {
 
                 <div className="flex items-center justify-between py-3">
                   <div>
-                    <p className="text-sm text-foreground">Password</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">Last changed: never</p>
-                  </div>
-                  <Button variant="outline" size="sm" className="rounded-lg h-7 text-xs">
-                    Change
-                  </Button>
-                </div>
-
-                <div className="flex items-center justify-between py-3">
-                  <div>
                     <p className="text-sm text-destructive">Delete account</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       Permanently remove all your data
