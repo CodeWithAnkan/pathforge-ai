@@ -15,15 +15,15 @@ export function Navbar() {
 
   const navLinks = user
     ? [
-        { label: "Home",      to: "/" },
-        { label: "Upload",    to: "/upload" },
-        { label: "Dashboard", to: "/dashboard" },
-        { label: "Community", to: "/community" },
-        { label: "Profile",   to: "/profile" },
-      ]
+      { label: "Home", to: "/" },
+      { label: "Upload", to: "/upload" },
+      { label: "Dashboard", to: "/dashboard" },
+      { label: "Community", to: "/community" },
+      { label: "Profile", to: "/profile" },
+    ]
     : [
-        { label: "Home", to: "/" },
-      ];
+      { label: "Home", to: "/" },
+    ];
 
   const handleSignOut = async () => {
     await signOut();
@@ -33,14 +33,17 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 glass">
       <div className="container mx-auto flex h-14 items-center justify-between px-4">
-        <Link to="/" className="flex items-center gap-2 group">
+        <Link to="/" className="flex items-center gap-2.5 group">
           <img
-            src="/logo.png"
+            src="/logo.svg"
             alt="PathForge AI"
             className="h-8 w-8 object-contain"
           />
-          <span className="text-[15px] font-semibold tracking-tight text-foreground">
-            Path<span className="text-[#3B82F6]">Forge</span> AI
+          <span
+            className="text-sm font-bold text-foreground tracking-wide"
+            style={{ fontFamily: "'Cinzel Decorative', serif" }}
+          >
+            PathForge<span className="text-[#3B82F6]">-AI</span>
           </span>
         </Link>
 
@@ -50,11 +53,10 @@ export function Navbar() {
             <Link
               key={link.to}
               to={link.to}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                location.pathname === link.to
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${location.pathname === link.to
                   ? "bg-primary/10 text-primary"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              }`}
+                }`}
             >
               {link.label}
             </Link>
@@ -116,11 +118,10 @@ export function Navbar() {
                   key={link.to}
                   to={link.to}
                   onClick={() => setMobileOpen(false)}
-                  className={`px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                    location.pathname === link.to
+                  className={`px-4 py-3 rounded-lg text-sm font-medium transition-colors ${location.pathname === link.to
                       ? "bg-primary/10 text-primary"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  }`}
+                    }`}
                 >
                   {link.label}
                 </Link>
