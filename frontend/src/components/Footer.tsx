@@ -34,7 +34,7 @@ export function Footer() {
           </div>
         </div>
         <div className="border-t border-border mt-8 pt-6">
-          <p className="text-xs text-muted-foreground">© 2024 PathForge AI. All rights reserved.</p>
+          <p className="text-xs text-muted-foreground">© 2026 PathForge AI. All rights reserved.</p>
         </div>
       </div>
     </footer>
