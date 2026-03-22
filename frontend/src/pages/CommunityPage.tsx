@@ -459,7 +459,7 @@ export default function CommunityPage() {
                                             <div key={s.skill}>
                                                 <div className="flex items-center justify-between mb-1">
                                                     <span className="text-xs font-medium text-foreground">{s.skill}</span>
-                                                    <span className="text-xs text-muted-foreground">{s.count} users</span>
+                                                    <span className="text-xs text-muted-foreground">{s.count} {s.count === 1 ? "user" : "users"}</span>
                                                 </div>
                                                 <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                                                     <motion.div
