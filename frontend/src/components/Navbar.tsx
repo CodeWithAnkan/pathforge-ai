@@ -33,7 +33,7 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 glass">
       <div className="container mx-auto flex h-14 items-center justify-between px-4">
-        <Link to="/" className="flex items-center gap-2 group">
+        <Link to="/" className="flex items-center gap-1 group">
           <img
             src="/logo.svg"
             alt="PathForge AI"
