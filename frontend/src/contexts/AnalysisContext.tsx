@@ -60,6 +60,7 @@ interface AnalysisContextType {
   setAnalysisFromResponse: (data: any) => void;
   loading: boolean;
   hasRealData: boolean;
+  resetAnalysis: () => void;
 }
 
 const defaultAnalysis: AnalysisData = {
@@ -71,21 +72,21 @@ const defaultAnalysis: AnalysisData = {
     careerPath: "",
     confidenceScore: 0,
   },
-  roadmapStages:         [],
-  skillGap:              [],
-  learningPlan:          {},
-  explanation:           { quote: "", reasons: [] },
+  roadmapStages: [],
+  skillGap: [],
+  learningPlan: {},
+  explanation: { quote: "", reasons: [] },
   careerRecommendations: [],
-  careerInsight:         null,
-  industryInsight:       null,
+  careerInsight: null,
+  industryInsight: null,
 };
 
 const AnalysisContext = createContext<AnalysisContextType | undefined>(undefined);
 
 export function AnalysisProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const [analysis, setAnalysis]     = useState<AnalysisData>(defaultAnalysis);
-  const [loading, setLoading]       = useState(false);
+  const [analysis, setAnalysis] = useState<AnalysisData>(defaultAnalysis);
+  const [loading, setLoading] = useState(false);
   const [hasRealData, setHasRealData] = useState(false);
 
   useEffect(() => {
@@ -107,13 +108,13 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
         .maybeSingle();
 
       if (data && !error) {
-        const rp = data.recommended_path   as any;
-        const sg = data.skill_gap          as any;
-        const lp = data.learning_plan      as any;
-        const ex = data.explanation        as any;
+        const rp = data.recommended_path as any;
+        const sg = data.skill_gap as any;
+        const lp = data.learning_plan as any;
+        const ex = data.explanation as any;
         const cr = (data as any).career_recommendations ?? [];
-        const ci = (data as any).career_insight         ?? null;
-        const ii = (data as any).industry_insight       ?? null;
+        const ci = (data as any).career_insight ?? null;
+        const ii = (data as any).industry_insight ?? null;
 
         const { data: profile } = await supabase
           .from("profiles")
@@ -123,24 +124,24 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
 
         setAnalysis({
           profile: {
-            name:            profile?.full_name || "",
-            role:            profile?.role      || "",
-            education:       profile?.education || "",
-            level:           cr[0]?.match_score_percent >= 70 ? "Advanced"
-                           : cr[0]?.match_score_percent >= 40 ? "Intermediate"
-                           : cr[0] ? "Beginner" : "",
-            careerPath:      cr[0]?.career
-                               ? cr[0].career.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())
-                               : profile?.role || "",
+            name: profile?.full_name || "",
+            role: profile?.role || "",
+            education: profile?.education || "",
+            level: cr[0]?.match_score_percent >= 70 ? "Advanced"
+              : cr[0]?.match_score_percent >= 40 ? "Intermediate"
+                : cr[0] ? "Beginner" : "",
+            careerPath: cr[0]?.career
+              ? cr[0].career.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())
+              : profile?.role || "",
             confidenceScore: Math.round(cr[0]?.match_score_percent ?? 0),
           },
-          roadmapStages:         rp || [],
-          skillGap:              sg || [],
-          learningPlan:          lp || {},
-          explanation:           ex || { quote: "", reasons: [] },
+          roadmapStages: rp || [],
+          skillGap: sg || [],
+          learningPlan: lp || {},
+          explanation: ex || { quote: "", reasons: [] },
           careerRecommendations: cr,
-          careerInsight:         ci,
-          industryInsight:       ii,
+          careerInsight: ci,
+          industryInsight: ii,
         });
         setHasRealData(true);
       }
@@ -153,20 +154,25 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
 
   const setAnalysisFromResponse = (data: any) => {
     setAnalysis({
-      profile:               data.profile                 || defaultAnalysis.profile,
-      roadmapStages:         data.recommended_path        || [],
-      skillGap:              data.skill_gap               || [],
-      learningPlan:          data.learning_plan           || {},
-      explanation:           data.explanation             || { quote: "", reasons: [] },
-      careerRecommendations: data.career_recommendations  || [],
-      careerInsight:         data.career_insight          ?? null,
-      industryInsight:       data.industry_insight        ?? null,
+      profile: data.profile || defaultAnalysis.profile,
+      roadmapStages: data.recommended_path || [],
+      skillGap: data.skill_gap || [],
+      learningPlan: data.learning_plan || {},
+      explanation: data.explanation || { quote: "", reasons: [] },
+      careerRecommendations: data.career_recommendations || [],
+      careerInsight: data.career_insight ?? null,
+      industryInsight: data.industry_insight ?? null,
     });
     setHasRealData(true);
   };
 
+  const resetAnalysis = () => {
+    setAnalysis(defaultAnalysis);
+    setHasRealData(false);
+  };
+
   return (
-    <AnalysisContext.Provider value={{ analysis, setAnalysisFromResponse, loading, hasRealData }}>
+    <AnalysisContext.Provider value={{ analysis, setAnalysisFromResponse, loading, hasRealData, resetAnalysis }}>
       {children}
     </AnalysisContext.Provider>
   );

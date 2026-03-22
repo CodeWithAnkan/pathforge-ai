@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAnalysis } from "@/contexts/AnalysisContext";
 
 interface ResumeRow {
   id: string;
@@ -122,6 +123,8 @@ export default function ProfilePage() {
     fetchData();
   }, [user]);
 
+  const { resetAnalysis } = useAnalysis();
+
   const handleDeleteResume = async () => {
     if (!pendingDelete || !user) return;
     setDeleteLoading(true);
@@ -151,6 +154,7 @@ export default function ProfilePage() {
 
       setResumes((prev) => prev.filter((r) => r.id !== pendingDelete.id));
       toast({ title: "Resume deleted", description: `${pendingDelete.file_name} was removed.` });
+      resetAnalysis();
     } catch (err: any) {
       toast({
         title: "Delete failed",
