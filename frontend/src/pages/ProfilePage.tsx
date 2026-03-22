@@ -202,14 +202,6 @@ export default function ProfilePage() {
               <div className="px-6 pb-6">
                 <div className="flex items-end justify-between -mt-7 mb-4">
                   <InitialsAvatar name={profile?.full_name ?? null} email={user?.email} />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={signOut}
-                    className="rounded-lg text-xs h-8"
-                  >
-                    <LogOut className="h-3.5 w-3.5 mr-1.5" /> Sign out
-                  </Button>
                 </div>
 
                 <h1 className="text-lg font-semibold">{displayName}</h1>
