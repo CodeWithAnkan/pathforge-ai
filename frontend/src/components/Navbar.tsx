@@ -41,7 +41,7 @@ export function Navbar() {
           />
           <span
             className="text-sm font-bold text-foreground tracking-wide -ml-1"
-            style={{ fontFamily: "'Inter', sans-serif" }}
+            style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500 }}
           >
             athForge<span className="text-[#3B82F6]">-AI</span>
           </span>
