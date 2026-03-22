@@ -59,12 +59,6 @@ export default function LandingPage() {
                   Upload Resume
                 </Button>
               </Link>
-              <Link to="/dashboard">
-                <Button variant="outline" size="lg" className="rounded-xl px-8 h-12 text-base font-semibold hover:scale-[1.02] transition-all duration-200 hover:bg-secondary">
-                  <Play className="mr-2 h-4 w-4" />
-                  See Demo
-                </Button>
-              </Link>
             </div>
           </motion.div>
         </div>
