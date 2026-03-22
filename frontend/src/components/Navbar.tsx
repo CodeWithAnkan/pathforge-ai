@@ -33,17 +33,17 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 glass">
       <div className="container mx-auto flex h-14 items-center justify-between px-4">
-        <Link to="/" className="flex items-center gap-2.5 group">
+        <Link to="/" className="flex items-center gap-2 group">
           <img
             src="/logo.svg"
             alt="PathForge AI"
-            className="h-8 w-8 object-contain"
+            className="h-8 w-8 object-contain dark:invert-0 invert"
           />
           <span
             className="text-sm font-bold text-foreground tracking-wide"
             style={{ fontFamily: "'Cinzel Decorative', serif" }}
           >
-            PathForge<span className="text-[#3B82F6]">-AI</span>
+            athForge<span className="text-[#3B82F6]">-AI</span>
           </span>
         </Link>
 
