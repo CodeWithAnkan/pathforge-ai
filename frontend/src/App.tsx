@@ -15,6 +15,7 @@ import LoginPage from "./pages/LoginPage";
 import ProfilePage from "./pages/ProfilePage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import NotFound from "./pages/NotFound";
+import CommunityPage from "./pages/CommunityPage";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => (
                   <Route path="/" element={<LandingPage />} />
                   <Route path="/upload" element={<ProtectedRoute><UploadPage /></ProtectedRoute>} />
                   <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+                  <Route path="/community" element={<ProtectedRoute><CommunityPage /></ProtectedRoute>} />
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
                   <Route path="/reset-password" element={<ResetPasswordPage />} />

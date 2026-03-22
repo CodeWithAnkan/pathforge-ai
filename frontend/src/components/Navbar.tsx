@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Moon, Sun, Sparkles, Menu, X, LogOut } from "lucide-react";
+import { Moon, Sun, Menu, X, LogOut } from "lucide-react";
 import { useTheme } from "@/lib/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -15,14 +15,15 @@ export function Navbar() {
 
   const navLinks = user
     ? [
-      { label: "Home", to: "/" },
-      { label: "Upload", to: "/upload" },
-      { label: "Dashboard", to: "/dashboard" },
-      { label: "Profile", to: "/profile" },
-    ]
+        { label: "Home",      to: "/" },
+        { label: "Upload",    to: "/upload" },
+        { label: "Dashboard", to: "/dashboard" },
+        { label: "Community", to: "/community" },
+        { label: "Profile",   to: "/profile" },
+      ]
     : [
-      { label: "Home", to: "/" },
-    ];
+        { label: "Home", to: "/" },
+      ];
 
   const handleSignOut = async () => {
     await signOut();
@@ -49,10 +50,11 @@ export function Navbar() {
             <Link
               key={link.to}
               to={link.to}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${location.pathname === link.to
-                ? "bg-primary/10 text-primary"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                }`}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                location.pathname === link.to
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              }`}
             >
               {link.label}
             </Link>
@@ -60,16 +62,29 @@ export function Navbar() {
         </nav>
 
         <div className="flex items-center gap-1.5">
-          <Button variant="ghost" size="icon" onClick={toggle} className="rounded-lg h-8 w-8 text-muted-foreground hover:text-foreground">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggle}
+            className="rounded-lg h-8 w-8 text-muted-foreground hover:text-foreground"
+          >
             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
           {user ? (
-            <Button variant="outline" size="sm" className="hidden md:flex rounded-lg h-8 text-xs" onClick={handleSignOut}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="hidden md:flex rounded-lg h-8 text-xs"
+              onClick={handleSignOut}
+            >
               <LogOut className="h-3.5 w-3.5 mr-1.5" /> Sign Out
             </Button>
           ) : (
             <Link to="/login" className="hidden md:block">
-              <Button size="sm" className="rounded-lg gradient-bg text-primary-foreground h-8 text-xs font-medium shadow-sm shadow-primary/20">
+              <Button
+                size="sm"
+                className="rounded-lg gradient-bg text-primary-foreground h-8 text-xs font-medium shadow-sm shadow-primary/20"
+              >
                 Sign In
               </Button>
             </Link>
@@ -101,21 +116,30 @@ export function Navbar() {
                   key={link.to}
                   to={link.to}
                   onClick={() => setMobileOpen(false)}
-                  className={`px-4 py-3 rounded-lg text-sm font-medium transition-colors ${location.pathname === link.to
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                    }`}
+                  className={`px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                    location.pathname === link.to
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  }`}
                 >
                   {link.label}
                 </Link>
               ))}
               {user ? (
-                <Button variant="outline" size="sm" className="w-full mt-2 rounded-lg" onClick={() => { setMobileOpen(false); handleSignOut(); }}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full mt-2 rounded-lg"
+                  onClick={() => { setMobileOpen(false); handleSignOut(); }}
+                >
                   <LogOut className="h-3.5 w-3.5 mr-1.5" /> Sign Out
                 </Button>
               ) : (
                 <Link to="/login" onClick={() => setMobileOpen(false)}>
-                  <Button size="sm" className="w-full mt-2 rounded-lg gradient-bg text-primary-foreground">
+                  <Button
+                    size="sm"
+                    className="w-full mt-2 rounded-lg gradient-bg text-primary-foreground"
+                  >
                     Sign In
                   </Button>
                 </Link>
