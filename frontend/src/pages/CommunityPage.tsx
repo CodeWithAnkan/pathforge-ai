@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { buildTrendingSkills, type TrendingSkill } from "@/lib/trending-skills";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Tag = "Resource" | "Tip" | "Experience" | "Question";
@@ -29,11 +30,6 @@ interface Post {
     created_at: string;
     author_name: string;
     has_upvoted: boolean;
-}
-
-interface TrendingSkill {
-    skill: string;
-    count: number;
 }
 
 interface CareerDist {
@@ -71,24 +67,11 @@ function formatCareer(s: string): string {
 async function fetchTrendingSkills(): Promise<TrendingSkill[]> {
     const { data } = await supabase
         .from("analyses")
-        .select("skill_gap");
+        .select("user_id, created_at, extracted_skills");
 
     if (!data) return [];
 
-    const counts: Record<string, number> = {};
-    for (const row of data) {
-        const gap = row.skill_gap as any[];
-        if (!Array.isArray(gap)) continue;
-        for (const item of gap) {
-            const skill = item?.skill as string;
-            if (skill) counts[skill] = (counts[skill] || 0) + 1;
-        }
-    }
-
-    return Object.entries(counts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 8)
-        .map(([skill, count]) => ({ skill, count }));
+    return buildTrendingSkills(data);
 }
 
 // ── Career distribution ───────────────────────────────────────────────────────

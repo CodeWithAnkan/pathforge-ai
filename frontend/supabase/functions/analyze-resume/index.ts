@@ -15,6 +15,38 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+function normalizeExtractedSkills(extractedSkills: unknown): string[] {
+  const uniqueSkills = new Set<string>();
+
+  const addSkill = (value: unknown) => {
+    if (typeof value !== "string") return;
+
+    const normalized = value.replace(/_/g, " ").replace(/\s+/g, " ").trim().toLowerCase();
+    if (!normalized) return;
+
+    uniqueSkills.add(normalized);
+  };
+
+  if (Array.isArray(extractedSkills)) {
+    for (const item of extractedSkills) {
+      if (typeof item === "string") {
+        addSkill(item);
+        continue;
+      }
+
+      if (item && typeof item === "object" && "skill" in item) {
+        addSkill((item as { skill?: unknown }).skill);
+      }
+    }
+  } else if (extractedSkills && typeof extractedSkills === "object") {
+    for (const skill of Object.keys(extractedSkills as Record<string, unknown>)) {
+      addSkill(skill);
+    }
+  }
+
+  return [...uniqueSkills];
+}
+
 
 // ── Transform raw Python API response → frontend data shapes ─────────────────
 function transformAnalysis(apiResponse: any) {
@@ -87,6 +119,7 @@ function transformAnalysis(apiResponse: any) {
 
   const career_insight   = apiResponse.career_insight   ?? null;
   const industry_insight = apiResponse.industry_insight ?? null;
+  const extracted_skills = normalizeExtractedSkills(apiResponse.extracted_skills);
 
   return {
     profile,
@@ -97,6 +130,7 @@ function transformAnalysis(apiResponse: any) {
     explanation,
     career_insight,
     industry_insight,
+    extracted_skills,
   };
 }
 
@@ -196,6 +230,7 @@ Deno.serve(async (req) => {
         career_recommendations: analysis.career_recommendations,
         career_insight:         analysis.career_insight,
         industry_insight:       analysis.industry_insight,
+        extracted_skills:       analysis.extracted_skills,
       })
       .select()
       .single();

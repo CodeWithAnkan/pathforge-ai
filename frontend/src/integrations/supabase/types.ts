@@ -16,9 +16,13 @@ export type Database = {
     Tables: {
       analyses: {
         Row: {
+          career_insight: Json | null
+          career_recommendations: Json | null
           created_at: string
           explanation: Json | null
+          extracted_skills: Json | null
           id: string
+          industry_insight: Json | null
           learning_plan: Json | null
           recommended_path: Json | null
           resume_id: string
@@ -26,9 +30,13 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          career_insight?: Json | null
+          career_recommendations?: Json | null
           created_at?: string
           explanation?: Json | null
+          extracted_skills?: Json | null
           id?: string
+          industry_insight?: Json | null
           learning_plan?: Json | null
           recommended_path?: Json | null
           resume_id: string
@@ -36,9 +44,13 @@ export type Database = {
           user_id: string
         }
         Update: {
+          career_insight?: Json | null
+          career_recommendations?: Json | null
           created_at?: string
           explanation?: Json | null
+          extracted_skills?: Json | null
           id?: string
+          industry_insight?: Json | null
           learning_plan?: Json | null
           recommended_path?: Json | null
           resume_id?: string
