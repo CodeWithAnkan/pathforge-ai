@@ -3,6 +3,8 @@ export interface TrendingSkill {
   count: number;
 }
 
+const MAX_TRENDING_SKILLS = 5;
+
 interface AnalysisSkillRow {
   user_id: string;
   created_at: string;
@@ -93,5 +95,5 @@ export function buildTrendingSkills(rows: AnalysisSkillRow[]): TrendingSkill[] {
 
   return [...skillCounts.values()]
     .sort((a, b) => b.count - a.count || a.skill.localeCompare(b.skill))
-    .slice(0, 8);
+    .slice(0, MAX_TRENDING_SKILLS);
 }

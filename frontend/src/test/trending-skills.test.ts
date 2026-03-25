@@ -12,6 +12,16 @@ describe("extractSkillNames", () => {
 });
 
 describe("buildTrendingSkills", () => {
+  it("limits the result to the top 5 skills", () => {
+    const trending = buildTrendingSkills([
+      { user_id: "u1", created_at: "2026-03-20T10:00:00.000Z", extracted_skills: { html: 1, css: 1, js: 1, sql: 1, react: 1, node: 1 } },
+      { user_id: "u2", created_at: "2026-03-21T10:00:00.000Z", extracted_skills: { html: 1, css: 1, js: 1, sql: 1, react: 1, api: 1 } },
+    ]);
+
+    expect(trending).toHaveLength(5);
+    expect(trending.map((item) => item.skill)).toEqual(["CSS", "HTML", "JS", "React", "SQL"]);
+  });
+
   it("counts shared skills across different users' latest resumes", () => {
     const trending = buildTrendingSkills([
       { user_id: "u1", created_at: "2026-03-20T10:00:00.000Z", extracted_skills: { html: 0.9, css: 0.7 } },
