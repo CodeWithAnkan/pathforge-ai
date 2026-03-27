@@ -77,24 +77,14 @@ async function fetchTrendingSkills(): Promise<TrendingSkill[]> {
 
 // ── Career distribution ───────────────────────────────────────────────────────
 async function fetchCareerDist(): Promise<CareerDist[]> {
-    const { data } = await supabase
-        .from("analyses")
-        .select("career_recommendations");
+    const { data, error } = await supabase.rpc("get_career_distribution", { limit_count: 5 });
 
-    if (!data) return [];
+    if (error || !data) return [];
 
-    const counts: Record<string, number> = {};
-    for (const row of data) {
-        const recs = (row as any).career_recommendations as any[];
-        if (!Array.isArray(recs) || recs.length === 0) continue;
-        const top = recs[0]?.career as string;
-        if (top) counts[top] = (counts[top] || 0) + 1;
-    }
-
-    return Object.entries(counts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
-        .map(([career, count]) => ({ career, count }));
+    return data.map((row) => ({
+        career: row.career,
+        count: Number(row.count ?? 0),
+    }));
 }
 
 // ── Posts fetcher ─────────────────────────────────────────────────────────────

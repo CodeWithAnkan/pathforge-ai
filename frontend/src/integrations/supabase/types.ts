@@ -175,6 +175,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_career_distribution: {
+        Args: { limit_count?: number };
+        Returns: {
+          career: string;
+          count: number;
+        }[];
+      };
       get_trending_skills: {
         Args: { limit_count?: number };
         Returns: {
