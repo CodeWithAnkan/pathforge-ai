@@ -3,6 +3,24 @@ import { useAnalysis } from "@/contexts/AnalysisContext";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { AlertTriangle, TrendingUp } from "lucide-react";
 
+function SkillGapTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ name?: string; value?: number }>; label?: string }) {
+  if (!active || !payload?.length) return null;
+
+  const current = payload.find((item) => item.name === "Your Level")?.value;
+  const required = payload.find((item) => item.name === "Required")?.value;
+
+  return (
+    <div
+      className="rounded-xl border bg-card px-4 py-3 text-sm shadow-lg"
+      style={{ borderColor: "hsl(var(--border))" }}
+    >
+      <p className="font-medium text-card-foreground">{label}</p>
+      <p className="mt-2 text-primary">Your Level : {current}</p>
+      <p className="mt-1 text-muted-foreground">Required : {required}</p>
+    </div>
+  );
+}
+
 export function SkillGapAnalysis() {
   const { analysis } = useAnalysis();
   const skills = analysis.skillGap;
@@ -27,14 +45,7 @@ export function SkillGapAnalysis() {
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
             <XAxis dataKey="name" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
             <YAxis tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} domain={[0, 100]} />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "hsl(var(--card))",
-                border: "1px solid hsl(var(--border))",
-                borderRadius: "12px",
-                fontSize: "12px",
-              }}
-            />
+            <Tooltip content={<SkillGapTooltip />} />
             <Bar dataKey="current" name="Your Level" radius={[4, 4, 0, 0]} fill="hsl(var(--primary))" />
             <Bar dataKey="required" name="Required" radius={[4, 4, 0, 0]} fill="hsl(var(--accent) / 0.5)" />
           </BarChart>
