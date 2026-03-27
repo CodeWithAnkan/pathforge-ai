@@ -479,8 +479,7 @@ export default function CommunityPage() {
                                                 </div>
                                                 <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                                                     <motion.div
-                                                        className="h-full rounded-full"
-                                                        style={{ background: "hsl(var(--accent))" }}
+                                                        className="h-full rounded-full bg-primary"
                                                         initial={{ width: 0 }}
                                                         animate={{ width: `${pct}%` }}
                                                         transition={{ delay: i * 0.05 + 0.3, duration: 0.5 }}
