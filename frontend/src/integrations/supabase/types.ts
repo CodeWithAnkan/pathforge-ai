@@ -175,6 +175,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_trending_skills: {
+        Args: { limit_count?: number };
+        Returns: {
+          skill: string;
+          count: number;
+        }[];
+      };
       increment_upvote: {
         Args: { post_id: string };
         Returns: void;

@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { buildTrendingSkills, type TrendingSkill } from "@/lib/trending-skills";
+import { formatSkillLabel, type TrendingSkill } from "@/lib/trending-skills";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Tag = "Resource" | "Tip" | "Experience" | "Question";
@@ -65,13 +65,14 @@ function formatCareer(s: string): string {
 
 // ── Trending skills ───────────────────────────────────────────────────────────
 async function fetchTrendingSkills(): Promise<TrendingSkill[]> {
-    const { data } = await supabase
-        .from("analyses")
-        .select("user_id, created_at, extracted_skills");
+    const { data, error } = await supabase.rpc("get_trending_skills", { limit_count: 5 });
 
-    if (!data) return [];
+    if (error || !data) return [];
 
-    return buildTrendingSkills(data);
+    return data.map((row) => ({
+        skill: formatSkillLabel(row.skill),
+        count: Number(row.count ?? 0),
+    }));
 }
 
 // ── Career distribution ───────────────────────────────────────────────────────
