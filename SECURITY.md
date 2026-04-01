@@ -23,7 +23,7 @@ Please include:
 Contact:
 
 * Maintainer: Ankan
-* Email: [your-email@example.com](mailto:your-email@example.com)
+* Email: [your-email@example.com](mailto:ankanchatterjee4855@gmail.com)
 
 ---
 
